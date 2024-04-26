@@ -14,7 +14,7 @@ var ReadyPlayers = []bool{false, false}
 type Player struct {
 	Name  string
 	Enemy *Player
-	Score int
+	Score int32
 }
 type GameMessage struct {
 	Command string
@@ -30,16 +30,18 @@ func PairPlayers(p1 *Player, p2 *Player) {
 	p1.Enemy, p2.Enemy = p2, p1
 }
 func (p *playerConn) Command(command []byte) {
-	log.Print("Command: '", command, "' received by player: ", p.Name)
+
 	var gameMsg GameMessage
 	err := json.Unmarshal(command, &gameMsg)
 	if err != nil {
 		log.Println("JSON unmarshal error:", err)
 		return
 	}
+	log.Print("Command: '", gameMsg.Command, gameMsg.Name, gameMsg.Score, "' received by player: ", p.Name)
 	switch gameMsg.Command {
 	case messageReady:
 		p.room.UpdateReady(p.Player)
+		log.Print("+ ready")
 	}
 }
 func (p *Player) GetState() string {

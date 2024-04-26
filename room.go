@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/alehano/wsgame/game"
-	"github.com/alehano/wsgame/utils"
 	"log"
+	"strconv"
 )
 
 var allRooms = make(map[string]*room)
@@ -39,10 +38,12 @@ func (r *room) run() {
 			if len(r.playerConns) == 2 {
 				delete(freeRooms, r.name)
 				// pair players
-				var p []*game.Player
-				game.PairPlayers(p[0], p[1])
+				var p []*Player
 				for k, _ := range r.playerConns {
 					p = append(p, k.Player)
+				}
+				PairPlayers(p[0], p[1])
+				for k, _ := range r.playerConns {
 					k.SendMessage(GameMessage{Command: messageEnemy, Name: k.Enemy.Name, Score: k.Enemy.Score})
 				}
 			}
@@ -69,14 +70,17 @@ Exit:
 }
 
 func (r *room) updateAllPlayers() {
-	for c := range r.playerConns {
-		c.sendState()
-	}
+	//for c := range r.playerConns {
+	//c.sendState()
+	//}
 }
 
 func NewRoom(name string) *room {
 	if name == "" {
-		name = utils.RandString(16)
+		name = "1"
+		for IsExist(name) {
+			name = name + strconv.FormatInt(int64(len(name)), 10)
+		}
 	}
 
 	room := &room{
@@ -97,11 +101,21 @@ func NewRoom(name string) *room {
 
 	return room
 }
-func (r *room) UpdateReady(p *game.Player) {
+func (r *room) UpdateReady(p *Player) {
 	r.readyPlayers++
+	log.Print("Ready players:", r.readyPlayers)
 	if r.readyPlayers == 2 {
+		log.Print("Both ready")
 		for i, _ := range r.playerConns {
 			i.SendMessage(GameMessage{Command: messageStart})
 		}
 	}
+}
+func IsExist(nameToCheck string) bool {
+	for _, curr := range allRooms {
+		if curr.name == nameToCheck {
+			return true
+		}
+	}
+	return false
 }

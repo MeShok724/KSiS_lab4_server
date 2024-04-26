@@ -1,10 +1,8 @@
 package main
 
 import (
-	"github.com/alehano/wsgame/game"
-	"log"
-	//"github.com/alehano/wsgame/game"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -35,7 +33,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		room = NewRoom("")
 	}
 	// Create Player and Conn
-	player := game.NewPlayer(playerName)
+	player := NewPlayer(playerName)
 	pConn := NewPlayerConn(ws, player, room)
 	// Join Player to room
 	room.join <- pConn

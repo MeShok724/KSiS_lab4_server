@@ -2,13 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/alehano/wsgame/game"
 	"github.com/gorilla/websocket"
+	"log"
 )
 
 type playerConn struct {
 	ws *websocket.Conn
-	*game.Player
+	*Player
 	room *room
 }
 
@@ -20,7 +20,7 @@ func (pc *playerConn) receiver() {
 			break
 		}
 		// execute a command
-		pc.Player.Command(command)
+		pc.Command(command)
 		// update all conn
 		pc.room.updateAll <- true
 	}
@@ -28,18 +28,19 @@ func (pc *playerConn) receiver() {
 	pc.ws.Close()
 }
 
-func (pc *playerConn) sendState() {
-	go func() {
-		msg := pc.GetState()
-		err := pc.ws.WriteMessage(websocket.TextMessage, []byte(msg))
-		if err != nil {
-			pc.room.leave <- pc
-			pc.ws.Close()
-		}
-	}()
-}
+//	func (pc *playerConn) sendState() {
+//		go func() {
+//			msg := pc.GetState()
+//			err := pc.ws.WriteMessage(websocket.TextMessage, []byte(msg))
+//			if err != nil {
+//				pc.room.leave <- pc
+//				pc.ws.Close()
+//			}
+//		}()
+//	}
 func (pc *playerConn) SendMessage(message GameMessage) {
 	go func() {
+		log.Println("Sending message to player:", pc.Player, ":", message)
 		msg, _ := json.Marshal(message)
 		err := pc.ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
@@ -48,7 +49,7 @@ func (pc *playerConn) SendMessage(message GameMessage) {
 		}
 	}()
 }
-func NewPlayerConn(ws *websocket.Conn, player *game.Player, room *room) *playerConn {
+func NewPlayerConn(ws *websocket.Conn, player *Player, room *room) *playerConn {
 	pc := &playerConn{ws, player, room}
 	go pc.receiver()
 	return pc
