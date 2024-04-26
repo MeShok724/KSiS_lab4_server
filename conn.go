@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/alehano/wsgame/game"
 	"github.com/gorilla/websocket"
 )
@@ -19,7 +20,7 @@ func (pc *playerConn) receiver() {
 			break
 		}
 		// execute a command
-		pc.Command(string(command))
+		pc.Player.Command(command)
 		// update all conn
 		pc.room.updateAll <- true
 	}
@@ -37,10 +38,10 @@ func (pc *playerConn) sendState() {
 		}
 	}()
 }
-func (pc *playerConn) SendMessage(message string) {
+func (pc *playerConn) SendMessage(message GameMessage) {
 	go func() {
-		msg := message
-		err := pc.ws.WriteMessage(websocket.TextMessage, []byte(msg))
+		msg, _ := json.Marshal(message)
+		err := pc.ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			pc.room.leave <- pc
 			pc.ws.Close()

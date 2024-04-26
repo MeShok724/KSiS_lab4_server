@@ -23,7 +23,8 @@ type room struct {
 	join chan *playerConn
 
 	// Unregister requests from connections.
-	leave chan *playerConn
+	leave        chan *playerConn
+	readyPlayers int
 }
 
 // Run the room in goroutine
@@ -39,11 +40,11 @@ func (r *room) run() {
 				delete(freeRooms, r.name)
 				// pair players
 				var p []*game.Player
+				game.PairPlayers(p[0], p[1])
 				for k, _ := range r.playerConns {
 					p = append(p, k.Player)
-					k.SendMessage("Enemy")
+					k.SendMessage(GameMessage{Command: messageEnemy, Name: k.Enemy.Name, Score: k.Enemy.Score})
 				}
-				game.PairPlayers(p[0], p[1])
 			}
 
 		case c := <-r.leave:
@@ -64,7 +65,7 @@ Exit:
 	delete(allRooms, r.name)
 	delete(freeRooms, r.name)
 	roomsCount -= 1
-	log.Print("Room closed:", r.name)
+	log.Print("room closed:", r.name)
 }
 
 func (r *room) updateAllPlayers() {
@@ -95,4 +96,12 @@ func NewRoom(name string) *room {
 	roomsCount += 1
 
 	return room
+}
+func (r *room) UpdateReady(p *game.Player) {
+	r.readyPlayers++
+	if r.readyPlayers == 2 {
+		for i, _ := range r.playerConns {
+			i.SendMessage(GameMessage{Command: messageStart})
+		}
+	}
 }
