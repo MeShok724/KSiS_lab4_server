@@ -41,10 +41,9 @@ func (r *room) run() {
 				var p []*game.Player
 				for k, _ := range r.playerConns {
 					p = append(p, k.Player)
+					k.SendMessage("Enemy")
 				}
 				game.PairPlayers(p[0], p[1])
-				//p[0].Command("Enemy")
-				//p[1].Command("Enemy")
 			}
 
 		case c := <-r.leave:

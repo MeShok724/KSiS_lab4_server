@@ -37,7 +37,16 @@ func (pc *playerConn) sendState() {
 		}
 	}()
 }
-
+func (pc *playerConn) SendMessage(message string) {
+	go func() {
+		msg := message
+		err := pc.ws.WriteMessage(websocket.TextMessage, []byte(msg))
+		if err != nil {
+			pc.room.leave <- pc
+			pc.ws.Close()
+		}
+	}()
+}
 func NewPlayerConn(ws *websocket.Conn, player *game.Player, room *room) *playerConn {
 	pc := &playerConn{ws, player, room}
 	go pc.receiver()
