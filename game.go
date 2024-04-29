@@ -3,11 +3,21 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 )
 
 const messageReady string = "Ready"
 const messageStart string = "Start"
 const messageEnemy string = "Enemy"
+const messageFish string = "Fish"
+const messageUpdate string = "Update"
+
+//var fishOfFirst int = 0
+
+// var fishOfSecond int = 0
+var XMax = 1600
+
+var YMax = 800
 
 var ReadyPlayers = []bool{false, false}
 
@@ -20,6 +30,8 @@ type GameMessage struct {
 	Command string
 	Name    string
 	Score   int32
+	FishX   int32
+	FishY   int32
 }
 
 func NewPlayer(name string) *Player {
@@ -42,11 +54,13 @@ func (p *playerConn) Command(command []byte) {
 	case messageReady:
 		p.room.UpdateReady(p.Player)
 		log.Print("+ ready")
+	case messageFish:
+		x, y := GenerateNewFish(XMax, YMax)
+		p.room.SendFishCords(x, y)
 	}
 }
-func (p *Player) GetState() string {
-	return "Game state for Player: " + p.Name
-}
-func (p *Player) GiveUp() {
-	log.Print("Player gave up: ", p.Name)
+func GenerateNewFish(maxX int, maxY int) (int32, int32) {
+	var x = int32(rand.Intn(maxX + 1)) // Добавляем 1, чтобы включить максимальное значение
+	var y = int32(rand.Intn(maxY + 1)) // Добавляем 1, чтобы включить максимальное значение
+	return x, y
 }
