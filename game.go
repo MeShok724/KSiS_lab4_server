@@ -55,6 +55,7 @@ func (p *playerConn) Command(command []byte) {
 		p.room.UpdateReady(p.Player)
 		log.Print("+ ready")
 	case messageFish:
+		p.Player.Score++
 		x, y := GenerateNewFish(XMax, YMax)
 		p.room.SendFishCords(x, y)
 	}

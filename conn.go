@@ -42,9 +42,9 @@ func (pc *playerConn) SendMessage(message GameMessage) {
 	go func() {
 		log.Println("Sending message to player:", pc.Player, ":", message)
 		msg, _ := json.Marshal(message)
-		wsMutex.Lock()
+		//wsMutex.Lock()
 		err := pc.ws.WriteMessage(websocket.TextMessage, msg)
-		wsMutex.Unlock()
+		//wsMutex.Unlock()
 		if err != nil {
 			pc.room.leave <- pc
 			pc.ws.Close()
@@ -58,10 +58,10 @@ func NewPlayerConn(ws *websocket.Conn, player *Player, room *room) *playerConn {
 }
 func (r *room) SendFishCords(x int32, y int32) {
 	for c := range r.playerConns {
-		message := GameMessage{Command: messageFish, FishX: x, FishY: y}
-		wsMutex.Lock()
+		message := GameMessage{Command: messageFish, FishX: x, FishY: y, Score: c.Enemy.Score}
+		//wsMutex.Lock()
 		c.SendMessage(message)
-		wsMutex.Unlock()
+		//wsMutex.Unlock()
 	}
 	log.Println("New Fish ", x, " ", y)
 }

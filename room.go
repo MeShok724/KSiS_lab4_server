@@ -113,13 +113,12 @@ func (r *room) UpdateReady(p *Player) {
 	log.Print("Ready players:", r.readyPlayers)
 	if r.readyPlayers == 2 {
 		log.Print("Both ready")
-		for i, _ := range r.playerConns {
-			wsMutex.Lock()
-			i.SendMessage(GameMessage{Command: messageStart})
-			wsMutex.Unlock()
-		}
 		x, y := GenerateNewFish(XMax, YMax)
-		r.SendFishCords(x, y)
+		for i, _ := range r.playerConns {
+			//wsMutex.Lock()
+			i.SendMessage(GameMessage{Command: messageStart, FishX: x, FishY: y})
+			//wsMutex.Unlock()
+		}
 	}
 }
 func IsExist(nameToCheck string) bool {
